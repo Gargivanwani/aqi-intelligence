@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AirSense India – Urban Air Quality Intelligence</title>
+  <link rel="stylesheet" href="src/style.css" />
+  <!-- Leaflet for maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="nav-brand">🌫️ AirSense India</div>
+      <div class="nav-links">
+        <a href="#map-section">Live Map</a>
+        <a href="#chat-section">AI Advisory</a>
+        <a href="#about-section">About</a>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero">
+      <h1>Urban Air Quality Intelligence</h1>
+      <p>Real-time AQI monitoring + AI-powered health advisories for Indian cities</p>
+      <div class="hero-stats" id="hero-stats">
+        <div class="stat-card" id="stat-cities">-- Cities</div>
+        <div class="stat-card" id="stat-avg">AQI --</div>
+        <div class="stat-card" id="stat-status">Loading...</div>
+      </div>
+    </header>
+
+    <!-- Map Section -->
+    <section id="map-section" class="section">
+      <h2>Live AQI Map</h2>
+      <p class="section-subtitle">Click a city marker to see detailed air quality data</p>
+      <div id="map"></div>
+      <div id="map-legend" class="legend">
+        <div class="legend-title">AQI Scale</div>
+        <div class="legend-item"><span class="dot good"></span> 0–50 Good</div>
+        <div class="legend-item"><span class="dot satisfactory"></span> 51–100 Satisfactory</div>
+        <div class="legend-item"><span class="dot moderate"></span> 101–200 Moderate</div>
+        <div class="legend-item"><span class="dot poor"></span> 201–300 Poor</div>
+        <div class="legend-item"><span class="dot very-poor"></span> 301–400 Very Poor</div>
+        <div class="legend-item"><span class="dot severe"></span> 401+ Severe</div>
+      </div>
+    </section>
+
+    <!-- City Detail Panel -->
+    <div id="city-panel" class="city-panel hidden">
+      <button class="close-btn" onclick="closePanel()">✕</button>
+      <div id="city-panel-content"></div>
+    </div>
+
+    <!-- AI Chat Section -->
+    <section id="chat-section" class="section">
+      <h2>AI Health Advisory</h2>
+      <p class="section-subtitle">Ask anything about air quality, health risks, or safety tips</p>
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-bubble ai">
+            👋 Hi! I'm your AirSense AI assistant. Ask me things like:<br/>
+            <em>"Is it safe to jog in Delhi today?"</em><br/>
+            <em>"What precautions should I take in Mumbai?"</em><br/>
+            <em>"Which Indian city has the best air quality right now?"</em>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Ask about air quality, health risks..." />
+          <button id="chat-send" onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about-section" class="section about">
+      <h2>About This Platform</h2>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-icon">📡</div>
+          <h3>Live Data</h3>
+          <p>Powered by OpenAQ & CPCB — real-time readings from 900+ monitoring stations across India.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">🤖</div>
+          <h3>AI Advisory</h3>
+          <p>Claude AI analyses current AQI data and gives personalised, location-specific health advice.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">🗺️</div>
+          <h3>Geospatial View</h3>
+          <p>Interactive city-level map with colour-coded risk zones for instant situational awareness.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">🏥</div>
+          <h3>Health Focus</h3>
+          <p>Advisories tailored for vulnerable groups — children, elderly, outdoor workers, and patients.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Built for ET AI Hackathon 2.0 | Problem 5 – Urban Air Quality Intelligence</p>
+      <p>Data: OpenAQ API + CPCB | AI: Claude API</p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="src/api/openaq.js"></script>
+  <script src="src/utils/aqiHelper.js"></script>
+  <script src="src/components/map.js"></script>
+  <script src="src/components/chat.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
