@@ -11,6 +11,10 @@ let refreshTimer = null;
 // ── Init ──────────────────────────────────────────────
 function initMap() {
   map = L.map('map', {
+    scrollWheelZoom: false,
+    zoomSnap: 0.5,
+    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 120,
     center: [22.5, 82.0],
     zoom: 5,
     zoomControl: true,

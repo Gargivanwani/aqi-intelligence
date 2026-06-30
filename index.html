@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,24 +12,53 @@
   <div id="app">
 
     <!-- Navbar -->
-    <nav class="navbar">
-      <div class="nav-brand">🌫️ AirSense India</div>
-      <div class="nav-links">
-        <a href="#map-section">Live Map</a>
-        <a href="#chat-section">AI Advisory</a>
-        <a href="#about-section">About</a>
+    <nav class="navbar" id="navbar">
+      <div class="nav-brand"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="vertical-align:middle;margin-right:8px;"><circle cx="14" cy="14" r="13" fill="#58a6ff" fill-opacity="0.15" stroke="#58a6ff" stroke-width="1.5"/><circle cx="14" cy="14" r="4" fill="#58a6ff"/><path d="M7 14c0-3.866 3.134-7 7-7" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/><path d="M4 14c0-5.523 4.477-10 10-10" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/><path d="M21 14c0 3.866-3.134 7-7 7" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/><path d="M24 14c0 5.523-4.477 10-10 10" stroke="#58a6ff" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/></svg><span style="font-size:1.1rem;font-weight:800;letter-spacing:-0.5px;">AirSense</span><span style="font-size:1.1rem;font-weight:400;color:var(--text-secondary);"> India</span></div>
+      <div class="nav-right">
+        <div class="nav-links">
+          <a href="#map-section">Live Map</a>
+          <a href="#features-section">Features</a>
+          <a href="#chat-section">AI Advisory</a>
+          <a href="#about-section">About</a>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">☀️ Light</button>
       </div>
     </nav>
 
     <!-- Hero -->
     <header class="hero">
-      <h1>Urban Air Quality Intelligence</h1>
-      <p>Real-time AQI monitoring + AI-powered health advisories for Indian cities</p>
+      <div class="hero-badge">🏆 ET AI Hackathon 2.0 — Problem Statement 5</div>
+      <h1>Urban Air Quality<br/>Intelligence Platform</h1>
+      <p>Real-time AQI monitoring, AI-powered health advisories, and geospatial pollution intelligence for 15 Indian cities</p>
+
       <div class="hero-stats">
         <div class="stat-card" id="stat-cities">-- Cities</div>
-        <div class="stat-card" id="stat-avg">AQI --</div>
+        <div class="stat-card" id="stat-avg">Avg AQI --</div>
         <div class="stat-card" id="stat-worst">Loading…</div>
         <div class="stat-card" id="stat-best">Loading…</div>
+      </div>
+
+      <!-- Animated AQI Counter -->
+      <div class="aqi-counter" id="aqi-counter">
+        <div class="counter-item">
+          <div class="counter-value" id="counter-monitoring">--</div>
+          <div class="counter-label">Monitoring Stations</div>
+        </div>
+        <div class="counter-divider"></div>
+        <div class="counter-item">
+          <div class="counter-value" id="counter-cities">--</div>
+          <div class="counter-label">Cities Tracked</div>
+        </div>
+        <div class="counter-divider"></div>
+        <div class="counter-item">
+          <div class="counter-value" id="counter-critical" style="color:var(--poor)">--</div>
+          <div class="counter-label">Critical AQI Cities</div>
+        </div>
+        <div class="counter-divider"></div>
+        <div class="counter-item">
+          <div class="counter-value" id="counter-refresh">5m</div>
+          <div class="counter-label">Auto Refresh</div>
+        </div>
       </div>
     </header>
 
@@ -38,14 +67,13 @@
       <div class="section-header">
         <div>
           <h2>Live AQI Map</h2>
-          <p class="section-subtitle">Click any city marker to see detailed air quality data & trend</p>
+          <p class="section-subtitle">Click any city marker for detailed data, trends & AI advice</p>
         </div>
         <span class="refresh-badge" id="refresh-badge">
           <span class="refresh-dot stale"></span> Loading…
         </span>
       </div>
 
-      <!-- Filter Bar -->
       <div class="filter-bar">
         <button class="filter-btn active" data-filter="all"      onclick="setFilter('all')">All Cities</button>
         <button class="filter-btn"        data-filter="good"     onclick="setFilter('good')">🟢 Good (≤100)</button>
@@ -54,21 +82,24 @@
         <button class="filter-btn"        data-filter="critical" onclick="setFilter('critical')">🟣 Critical (300+)</button>
       </div>
 
-      <!-- Map + Rankings side by side -->
       <div class="map-layout">
         <div id="map"></div>
-
-        <!-- Rankings Sidebar -->
         <div class="rankings-panel">
           <div class="rankings-header">
             <span>City Rankings</span>
-            <span style="font-size:0.72rem;color:#8b949e;">Worst → Best</span>
+            <span style="font-size:0.72rem;color:var(--text-secondary);">Worst → Best</span>
           </div>
-          <div id="rankings-list"></div>
+          <div id="rankings-list">
+            <!-- Skeleton loading -->
+            ${Array(8).fill(0).map(() => `
+              <div class="skeleton-card" style="margin:6px 8px;">
+                <div class="skeleton skeleton-text wide"></div>
+                <div class="skeleton skeleton-text short"></div>
+              </div>`).join('')}
+          </div>
         </div>
       </div>
 
-      <!-- Legend -->
       <div class="legend">
         <div class="legend-title">AQI Scale</div>
         <div class="legend-item"><span class="dot good"></span> 0–50 Good</div>
@@ -86,6 +117,94 @@
       <div id="city-panel-content"></div>
     </div>
 
+    <!-- Features Section -->
+    <section id="features-section" class="section">
+      <h2>Intelligence Features</h2>
+      <p class="section-subtitle" style="margin-bottom:24px;">Advanced analytics powered by AI and real-time data</p>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('forecast')">📈 24h Forecast</button>
+        <button class="tab-btn" onclick="switchTab('health')">🏥 Health Advisory</button>
+        <button class="tab-btn" onclick="switchTab('compare')">⚖️ Compare Cities</button>
+        <button class="tab-btn" onclick="switchTab('sources')">🏭 Pollution Sources</button>
+      </div>
+
+      <!-- 24h Forecast Tab -->
+      <div id="tab-forecast" class="tab-content active">
+        <div class="feature-card">
+          <h3>📈 24-Hour AQI Forecast</h3>
+          <div style="margin-bottom:14px;">
+            <select class="city-select" style="max-width:220px;" onchange="updateForecast(this.value)" id="forecast-city-select">
+              <option value="">Select a city…</option>
+            </select>
+          </div>
+          <div id="forecast-chart-wrap">
+            <div style="text-align:center;color:var(--text-secondary);padding:40px;font-size:0.9rem;">Select a city to see the 24-hour AQI forecast</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Health Advisory Tab -->
+      <div id="tab-health" class="tab-content">
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>👶 Children (Under 12)</h3>
+            <div id="health-children"></div>
+          </div>
+          <div class="feature-card">
+            <h3>👴 Elderly (60+)</h3>
+            <div id="health-elderly"></div>
+          </div>
+          <div class="feature-card">
+            <h3>🫁 Asthma / Respiratory</h3>
+            <div id="health-asthma"></div>
+          </div>
+          <div class="feature-card">
+            <h3>🏃 Outdoor Workers</h3>
+            <div id="health-outdoor"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compare Cities Tab -->
+      <div id="tab-compare" class="tab-content">
+        <div class="feature-card">
+          <h3>⚖️ Compare Two Cities</h3>
+          <div class="compare-selects">
+            <select class="city-select" id="compare-city-1" onchange="updateCompare()">
+              <option value="">City 1…</option>
+            </select>
+            <div class="compare-vs">VS</div>
+            <select class="city-select" id="compare-city-2" onchange="updateCompare()">
+              <option value="">City 2…</option>
+            </select>
+          </div>
+          <div class="compare-result" id="compare-result">
+            <div style="text-align:center;color:var(--text-secondary);padding:30px;grid-column:1/-1;font-size:0.9rem;">Select two cities to compare</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pollution Sources Tab -->
+      <div id="tab-sources" class="tab-content">
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>🏭 Pollution Source Breakdown</h3>
+            <div style="margin-bottom:14px;">
+              <select class="city-select" onchange="updateSources(this.value)" id="sources-city-select">
+                <option value="">Select a city…</option>
+              </select>
+            </div>
+            <div id="sources-chart"></div>
+          </div>
+          <div class="feature-card">
+            <h3>📊 National Average Sources</h3>
+            <div id="national-sources"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- API Key Modal -->
     <div id="api-key-modal" class="modal-overlay hidden">
       <div class="modal-box">
@@ -98,7 +217,7 @@
           <button class="modal-btn-secondary" onclick="hideApiKeyModal()">Cancel</button>
           <button class="modal-btn-primary" onclick="saveApiKey()">Connect →</button>
         </div>
-        <div class="modal-note">🔒 Your key is stored only in browser memory — never in code or GitHub.</div>
+        <div class="modal-note">🔒 Key stored only in browser memory — never in code or GitHub.</div>
       </div>
     </div>
 
@@ -107,7 +226,7 @@
       <div class="section-header">
         <div>
           <h2>AI Health Advisory</h2>
-          <p class="section-subtitle">Ask anything about air quality, health risks, or safety tips for any Indian city</p>
+          <p class="section-subtitle">Ask anything about air quality, health risks, or safety tips</p>
         </div>
         <button id="api-key-btn" class="filter-btn" onclick="showApiKeyModal()">🔑 Connect API Key</button>
       </div>
@@ -115,8 +234,7 @@
         <div class="chat-messages" id="chat-messages">
           <div class="chat-bubble ai">
             👋 Hi! I'm your AirSense AI assistant.<br/><br/>
-            To activate me, click <strong>"Connect API Key"</strong> above and paste your free Groq key.<br/><br/>
-            Then ask me things like:<br/>
+            Click <strong>"Connect API Key"</strong> above to activate me, then ask:<br/>
             <em>"Is it safe to jog in Delhi today?"</em><br/>
             <em>"What precautions for Mumbai's AQI?"</em><br/>
             <em>"Which city has the cleanest air right now?"</em>
@@ -131,40 +249,51 @@
 
     <!-- About -->
     <section id="about-section" class="section about">
-      <h2>About This Platform</h2>
-      <div class="about-grid">
+      <h2>About AirSense India</h2>
+      <div class="about-grid" style="margin-top:20px;">
         <div class="about-card">
           <div class="about-icon">📡</div>
           <h3>Live Data</h3>
-          <p>Powered by OpenAQ & CPCB — real-time readings from 900+ monitoring stations across India. Auto-refreshes every 5 minutes.</p>
+          <p>OpenAQ & CPCB — 900+ monitoring stations. Auto-refreshes every 5 minutes.</p>
         </div>
         <div class="about-card">
           <div class="about-icon">🤖</div>
           <h3>AI Advisory</h3>
-          <p>Claude AI analyses current AQI data and gives personalised, location-specific health advice in plain language.</p>
+          <p>Groq-powered LLM gives personalised, city-specific health advice in seconds.</p>
         </div>
         <div class="about-card">
           <div class="about-icon">🗺️</div>
-          <h3>Geospatial View</h3>
-          <p>Interactive city-level map with colour-coded pulsing risk markers and 7-day trend sparklines per city.</p>
+          <h3>Geospatial</h3>
+          <p>Pulsing risk markers, 7-day sparklines, and city rankings on an interactive map.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">📈</div>
+          <h3>Forecasting</h3>
+          <p>24-hour AQI predictions per city using meteorological and traffic pattern data.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">⚖️</div>
+          <h3>City Compare</h3>
+          <p>Side-by-side comparison of AQI, pollutants, and health risk across any two cities.</p>
         </div>
         <div class="about-card">
           <div class="about-icon">🏥</div>
-          <h3>Health Focus</h3>
-          <p>Advisories tailored for vulnerable groups — children, elderly, outdoor workers, and patients with respiratory conditions.</p>
+          <h3>Health Groups</h3>
+          <p>Tailored advisories for children, elderly, asthma patients, and outdoor workers.</p>
         </div>
       </div>
     </section>
 
     <footer class="footer">
-      <p>Built for ET AI Hackathon 2.0 | Problem 5 – Urban Air Quality Intelligence</p>
-      <p>Data: OpenAQ API + CPCB | AI: Anthropic Claude API</p>
+      <p>🌫️ AirSense India — Built for ET AI Hackathon 2.0 | Problem 5 – Urban Air Quality Intelligence</p>
+      <p>Data: OpenAQ API + CPCB | AI: Groq (LLaMA 3.3 70B) | Maps: Leaflet + CartoDB</p>
     </footer>
   </div>
 
   <script src="src/api/openaq.js"></script>
   <script src="src/utils/aqiHelper.js"></script>
   <script src="src/components/map.js"></script>
+  <script src="src/components/features.js"></script>
   <script src="src/components/chat.js"></script>
   <script src="src/app.js"></script>
 </body>
