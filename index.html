@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AirSense India – Urban Air Quality Intelligence</title>
   <link rel="stylesheet" href="src/style.css" />
-  <!-- Leaflet for maps -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
   <div id="app">
+
     <!-- Navbar -->
     <nav class="navbar">
       <div class="nav-brand">🌫️ AirSense India</div>
@@ -25,19 +25,51 @@
     <header class="hero">
       <h1>Urban Air Quality Intelligence</h1>
       <p>Real-time AQI monitoring + AI-powered health advisories for Indian cities</p>
-      <div class="hero-stats" id="hero-stats">
+      <div class="hero-stats">
         <div class="stat-card" id="stat-cities">-- Cities</div>
         <div class="stat-card" id="stat-avg">AQI --</div>
-        <div class="stat-card" id="stat-status">Loading...</div>
+        <div class="stat-card" id="stat-worst">Loading…</div>
+        <div class="stat-card" id="stat-best">Loading…</div>
       </div>
     </header>
 
     <!-- Map Section -->
     <section id="map-section" class="section">
-      <h2>Live AQI Map</h2>
-      <p class="section-subtitle">Click a city marker to see detailed air quality data</p>
-      <div id="map"></div>
-      <div id="map-legend" class="legend">
+      <div class="section-header">
+        <div>
+          <h2>Live AQI Map</h2>
+          <p class="section-subtitle">Click any city marker to see detailed air quality data & trend</p>
+        </div>
+        <span class="refresh-badge" id="refresh-badge">
+          <span class="refresh-dot stale"></span> Loading…
+        </span>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all"      onclick="setFilter('all')">All Cities</button>
+        <button class="filter-btn"        data-filter="good"     onclick="setFilter('good')">🟢 Good (≤100)</button>
+        <button class="filter-btn"        data-filter="moderate" onclick="setFilter('moderate')">🟡 Moderate (101–200)</button>
+        <button class="filter-btn"        data-filter="poor"     onclick="setFilter('poor')">🔴 Poor (201–300)</button>
+        <button class="filter-btn"        data-filter="critical" onclick="setFilter('critical')">🟣 Critical (300+)</button>
+      </div>
+
+      <!-- Map + Rankings side by side -->
+      <div class="map-layout">
+        <div id="map"></div>
+
+        <!-- Rankings Sidebar -->
+        <div class="rankings-panel">
+          <div class="rankings-header">
+            <span>City Rankings</span>
+            <span style="font-size:0.72rem;color:#8b949e;">Worst → Best</span>
+          </div>
+          <div id="rankings-list"></div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
         <div class="legend-title">AQI Scale</div>
         <div class="legend-item"><span class="dot good"></span> 0–50 Good</div>
         <div class="legend-item"><span class="dot satisfactory"></span> 51–100 Satisfactory</div>
@@ -54,21 +86,44 @@
       <div id="city-panel-content"></div>
     </div>
 
+    <!-- API Key Modal -->
+    <div id="api-key-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <div class="modal-icon">🔑</div>
+        <h3>Connect Groq API Key</h3>
+        <p>Get a <strong>free</strong> key at <a href="https://console.groq.com" target="_blank">console.groq.com</a> — no card needed.</p>
+        <input type="password" id="api-key-input" placeholder="Paste your key here (gsk_...)" />
+        <div id="api-key-error" class="api-key-error"></div>
+        <div class="modal-actions">
+          <button class="modal-btn-secondary" onclick="hideApiKeyModal()">Cancel</button>
+          <button class="modal-btn-primary" onclick="saveApiKey()">Connect →</button>
+        </div>
+        <div class="modal-note">🔒 Your key is stored only in browser memory — never in code or GitHub.</div>
+      </div>
+    </div>
+
     <!-- AI Chat Section -->
     <section id="chat-section" class="section">
-      <h2>AI Health Advisory</h2>
-      <p class="section-subtitle">Ask anything about air quality, health risks, or safety tips</p>
+      <div class="section-header">
+        <div>
+          <h2>AI Health Advisory</h2>
+          <p class="section-subtitle">Ask anything about air quality, health risks, or safety tips for any Indian city</p>
+        </div>
+        <button id="api-key-btn" class="filter-btn" onclick="showApiKeyModal()">🔑 Connect API Key</button>
+      </div>
       <div class="chat-container">
         <div class="chat-messages" id="chat-messages">
           <div class="chat-bubble ai">
-            👋 Hi! I'm your AirSense AI assistant. Ask me things like:<br/>
+            👋 Hi! I'm your AirSense AI assistant.<br/><br/>
+            To activate me, click <strong>"Connect API Key"</strong> above and paste your free Groq key.<br/><br/>
+            Then ask me things like:<br/>
             <em>"Is it safe to jog in Delhi today?"</em><br/>
-            <em>"What precautions should I take in Mumbai?"</em><br/>
-            <em>"Which Indian city has the best air quality right now?"</em>
+            <em>"What precautions for Mumbai's AQI?"</em><br/>
+            <em>"Which city has the cleanest air right now?"</em>
           </div>
         </div>
         <div class="chat-input-row">
-          <input type="text" id="chat-input" placeholder="Ask about air quality, health risks..." />
+          <input type="text" id="chat-input" placeholder="Connect your Groq API key to start chatting..." />
           <button id="chat-send" onclick="sendMessage()">Send</button>
         </div>
       </div>
@@ -81,33 +136,32 @@
         <div class="about-card">
           <div class="about-icon">📡</div>
           <h3>Live Data</h3>
-          <p>Powered by OpenAQ & CPCB — real-time readings from 900+ monitoring stations across India.</p>
+          <p>Powered by OpenAQ & CPCB — real-time readings from 900+ monitoring stations across India. Auto-refreshes every 5 minutes.</p>
         </div>
         <div class="about-card">
           <div class="about-icon">🤖</div>
           <h3>AI Advisory</h3>
-          <p>Claude AI analyses current AQI data and gives personalised, location-specific health advice.</p>
+          <p>Claude AI analyses current AQI data and gives personalised, location-specific health advice in plain language.</p>
         </div>
         <div class="about-card">
           <div class="about-icon">🗺️</div>
           <h3>Geospatial View</h3>
-          <p>Interactive city-level map with colour-coded risk zones for instant situational awareness.</p>
+          <p>Interactive city-level map with colour-coded pulsing risk markers and 7-day trend sparklines per city.</p>
         </div>
         <div class="about-card">
           <div class="about-icon">🏥</div>
           <h3>Health Focus</h3>
-          <p>Advisories tailored for vulnerable groups — children, elderly, outdoor workers, and patients.</p>
+          <p>Advisories tailored for vulnerable groups — children, elderly, outdoor workers, and patients with respiratory conditions.</p>
         </div>
       </div>
     </section>
 
     <footer class="footer">
       <p>Built for ET AI Hackathon 2.0 | Problem 5 – Urban Air Quality Intelligence</p>
-      <p>Data: OpenAQ API + CPCB | AI: Claude API</p>
+      <p>Data: OpenAQ API + CPCB | AI: Anthropic Claude API</p>
     </footer>
   </div>
 
-  <!-- Scripts -->
   <script src="src/api/openaq.js"></script>
   <script src="src/utils/aqiHelper.js"></script>
   <script src="src/components/map.js"></script>
